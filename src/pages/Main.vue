@@ -1,0 +1,107 @@
+<template>
+  <div class="flex flex-col items-center w-full">
+
+    <div class="my-4 flex flex-col items-center">
+      <label class="text-slate-700 font-medium mb-1">Дата:</label>
+      <input
+          type="date"
+          :value="dateForInput"
+          @change="onDateChange($event)"
+          class="border border-slate-300 rounded-lg px-3 py-2 text-center"
+      />
+    </div>
+
+    <!-- Карточки уроков -->
+    <div
+        v-for="(lesson, index) in lessons"
+        :key="index"
+        class="relative flex flex-col my-4 bg-white shadow-sm border border-slate-200 rounded-lg w-full max-w-md"
+    >
+      <div class="flex justify-between items-center mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
+        <span class="text-sm font-medium text-slate-600">{{ lesson.subject }}</span>
+        <span class="text-sm font-medium text-slate-600">{{ lesson.time }}</span>
+      </div>
+      <div class="p-4">
+        <p class="text-slate-600 leading-normal font-light">{{ lesson.homework }}</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import { useCookies } from "@vueuse/integrations/useCookies"
+import { postRequest } from '../api/api.vue'
+
+const time = [
+  "10:00 - 11:00",
+  "11:00 - 12:00",
+  "12:00 - 13:00",
+  "13:00 - 14:00",
+  "14:00 - 15:00",
+  "15:00 - 16:00",
+  "16:00 - 17:00",
+  "17:00 - 18:00"
+]
+
+const cookies = useCookies()
+const lessons = ref<any[]>([])
+
+// реактивная дата
+const today = ref(new Date())
+
+// формат для отображения "dd.MM.yyyy"
+const displayDate = computed(() => {
+  const day = String(today.value.getDate()).padStart(2, '0')
+  const month = String(today.value.getMonth() + 1).padStart(2, '0')
+  const year = today.value.getFullYear()
+  return `${day}.${month}.${year}`
+})
+
+// формат для <input type="date"> "yyyy-MM-dd"
+const dateForInput = computed(() => {
+  const day = String(today.value.getDate()).padStart(2, '0')
+  const month = String(today.value.getMonth() + 1).padStart(2, '0')
+  const year = today.value.getFullYear()
+  return `${year}-${month}-${day}`
+})
+
+async function fetchHomework() {
+  const rawClass = cookies.get("class") || ""
+  const className = rawClass.replace("А", "A").replace("Б", "B").replace("В", "V")
+
+  const response = await postRequest('/class/get_hw/', {
+    date: displayDate.value,
+    class_name: className
+  })
+
+  if (Array.isArray(response)) {
+    lessons.value = response.map((entry: string, index: number) => {
+      const parts = entry.split('.', 2)
+      if (parts.length === 2) {
+        const subject = parts[0]
+        let homework = parts[1]
+            .replace(/\[|\]|'/g, '')
+            .split(', ')
+            .filter(Boolean)
+            .join('\n')
+        if (!homework) homework = 'Нет домашнего задания'
+
+        return { subject, homework, time: time[index] || '—' }
+      }
+      return { subject: entry, homework: 'Нет домашнего задания', time: time[index] || '—' }
+    })
+  }
+}
+
+// при выборе новой даты
+function onDateChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  today.value = new Date(input.value)
+  fetchHomework()
+}
+
+onMounted(() => {
+  fetchHomework()
+})
+</script>

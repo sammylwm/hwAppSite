@@ -2,13 +2,14 @@
 import {ref} from 'vue'
 import {postRequest} from '../api/api.vue'
 import {useCookies} from "@vueuse/integrations/useCookies";
-import { useRouter } from 'vue-router'
+import {useRouter} from 'vue-router'
 
 const router = useRouter()
 const cookies = useCookies()
 const loading = ref(false)
 const error = ref(null)
 const result = ref(null)
+const code = ref('')
 const email = ref('')
 const emailError = ref('')
 const class_name = ref('')
@@ -19,8 +20,43 @@ const login_dn = ref('')
 const login_dnError = ref('')
 const password_dn = ref('')
 const password_dnError = ref('')
+const isCodeConfirmed = ref(false)
 
+async function userCode() {
+  code.value = await postRequest("/register/", { email: email.value })
+
+  const inputCode = window.prompt("Введите код из письма:")
+  if (inputCode === code.value.toString()) {
+    isCodeConfirmed.value = true
+    await userCreate()
+  } else {
+    alert("❌ Неверный код!")
+  }
+}
 async function userCreate() {
+  try {
+    result.value = await postRequest('/user/create/', {
+      email: email.value, class_name: class_name.value,
+      password: password.value, login_dn: login_dn.value, password_dn: password_dn.value
+    })
+
+    if (result.value) {
+      const datas = await postRequest('/user/web_get_datas/', {email: email.value, password: password.value})
+      cookies.set('email', datas[0], '7d')
+      cookies.set('class', datas[1], '7d')
+      cookies.set('login_dn', datas[2], '7d')
+      cookies.set('password_dn', datas[3], '7d')
+      cookies.set('password', datas[4], '7d')
+      error.value = null
+      await router.push("/main/")
+    } else {
+      error.value = "Не удалось создать аккаунт."
+    }
+  } catch (e) {
+    error.value = e
+  }
+}
+async function validate() {
   try {
     loading.value = true
     error.value = null
@@ -63,28 +99,8 @@ async function userCreate() {
       password_dnError.value = "Не верный логин или пароль от дневника"
       return
     }
+    if (!isCodeConfirmed.value) await userCode()
 
-
-    try {
-      result.value = await postRequest('/user/create/', {
-        email: email.value, class_name: class_name.value,
-        password: password.value, login_dn: login_dn.value, password_dn: password_dn.value
-      })
-
-      if (result.value) {
-        const datas = await postRequest('/user/web_get_datas/', {email: email.value})
-        cookies.set('email', datas[0], '7d')
-        cookies.set('class', datas[1], '7d')
-        cookies.set('login_dn', datas[2], '7d')
-        cookies.set('password_dn', datas[3], '7d')
-        error.value = null
-        await router.push("/main/")
-      } else {
-        error.value = "Не удалось создать аккаунт."
-      }
-    } catch (e) {
-      error.value = e
-    }
   } finally {
     loading.value = false
   }
@@ -157,16 +173,16 @@ async function userCreate() {
         <p v-if="password_dnError" class="text-red-500 text-sm mt-1">{{ password_dnError }}</p>
 
         <button
-            @click="userCreate(email, password)"
+            @click="validate()"
             :disabled="loading"
             class="bg-green-500 hover:bg-green-600 text-white font-semibold
              py-3 rounded-lg transition disabled:opacity-50
              disabled:cursor-not-allowed"
         >
-          {{ loading ? 'Загрузка...' : 'Проверить' }}
+          {{ loading ? 'Загрузка...' : 'Готово' }}
         </button>
       </div>
-      <router-link to="/">
+      <router-link to="/login">
         <p class="text-center text-gray-400 mt-4 text-sm">
           Есть аккаунт? <a href="#" class="text-green-500 hover:underline">
           Войти</a>
@@ -176,3 +192,4 @@ async function userCreate() {
     </div>
   </div>
 </template>
+

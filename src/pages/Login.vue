@@ -2,7 +2,7 @@
 import {ref} from 'vue'
 import {postRequest} from '../api/api.vue'
 import {useCookies} from "@vueuse/integrations/useCookies";
-import { useRouter } from 'vue-router'
+import {useRouter} from 'vue-router'
 
 const router = useRouter()
 const cookies = useCookies()
@@ -15,17 +15,18 @@ const data = ref(null)
 const emailError = ref('')
 const passwordError = ref('')
 
-async function userExists(emailValue, passwordValue) {
+async function userExists() {
   loading.value = true
   error.value = null
   try {
-    result.value = await postRequest('/user/', {email: emailValue, password: passwordValue})
+    result.value = await postRequest('/user/', {email: email.value, password: password.value})
     if (result.value === 2) {
-      const datas = await postRequest('/user/web_get_datas/', {email: emailValue})
+      const datas = await postRequest('/user/web_get_datas/', {email: email.value, password: password.value})
       cookies.set('email', datas[0], '7d')
       cookies.set('class', datas[1], '7d')
       cookies.set('login_dn', datas[2], '7d')
       cookies.set('password_dn', datas[3], '7d')
+      cookies.set('password', datas[4], '7d')
       emailError.value = null
       passwordError.value = null
       await router.push("/main/")
@@ -81,7 +82,7 @@ async function userExists(emailValue, passwordValue) {
              py-3 rounded-lg transition disabled:opacity-50
              disabled:cursor-not-allowed"
         >
-          {{ loading ? 'Загрузка...' : 'Проверить' }}
+          {{ loading ? 'Загрузка...' : 'Войти' }}
         </button>
       </div>
       <router-link to="/register">
