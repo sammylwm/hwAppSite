@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+body {
+    background-color: rgba(247, 254, 231);
+}
+
+.project_it {
+    @apply bg-white shadow-md px-6 py-4 rounded-2xl flex items-center gap-2
+    text-gray-600 hover:text-blue-600 hover:shadow-lg
+    hover:scale-105 transition transform cursor-pointer;
+}

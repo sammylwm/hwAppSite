@@ -2,7 +2,9 @@
 import {ref} from 'vue'
 import {postRequest} from '../api/api.vue'
 import {useCookies} from "@vueuse/integrations/useCookies";
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const cookies = useCookies()
 const loading = ref(false)
 const error = ref(null)
@@ -26,6 +28,7 @@ async function userExists(emailValue, passwordValue) {
       cookies.set('password_dn', datas[3], '7d')
       emailError.value = null
       passwordError.value = null
+      await router.push("/main/")
     } else if (result.value === 1) {
       passwordError.value = "Не верный пароль"
       emailError.value = null
