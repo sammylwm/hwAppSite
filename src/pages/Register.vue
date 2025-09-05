@@ -35,8 +35,9 @@ async function userCode() {
 }
 async function userCreate() {
   try {
+    const className = class_name.value.toString().replace("А", "A").replace("Б", "B").replace("В", "V")
     result.value = await postRequest('/user/create/', {
-      email: email.value, class_name: class_name.value,
+      email: email.value, class_name: className,
       password: password.value, login_dn: login_dn.value, password_dn: password_dn.value
     })
 
