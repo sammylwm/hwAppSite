@@ -12,7 +12,7 @@ jobs:
           password: Dosya1009
           port: 1009
           script: |
-            cd /opt/hwAppSite
+            cd /var/www/hwAppSite
             git pull
             npm ci
             npm run build
