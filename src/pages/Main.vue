@@ -1,6 +1,17 @@
 <template>
   <div class="flex flex-col items-center w-full">
+    <!-- Поп-ап -->
+    <AddHwDialog
+        :open="dialogOpen"
+        @dismiss="dialogOpen = false"
+    />
 
+    <!-- Кнопка открыть -->
+    <button v-if="ifAdmin" @click="dialogOpen = true" class="px-4 py-2 rounded-lg bg-blue-500 text-white">
+      Добавить домашку
+    </button>
+
+    <!-- Дата -->
     <div class="my-4 flex flex-col items-center">
       <label class="text-slate-700 font-medium mb-1">Дата:</label>
       <input
@@ -29,9 +40,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useCookies } from "@vueuse/integrations/useCookies"
-import { postRequest } from '../api/api.vue'
+import {ref, onMounted, computed} from 'vue'
+import {useCookies} from "@vueuse/integrations/useCookies"
+import {postRequest} from '../api/api.vue'
+import AddHwDialog from "../components/AddHwDialog.vue";
 
 const time = [
   "10:00 - 11:00",
@@ -46,7 +58,9 @@ const time = [
 
 const cookies = useCookies()
 const lessons = ref<any[]>([])
+const dialogOpen = ref(false)
 
+const ifAdmin = ref(false)
 // реактивная дата
 const today = ref(new Date())
 
@@ -58,7 +72,6 @@ const displayDate = computed(() => {
   return `${day}.${month}.${year}`
 })
 
-// формат для <input type="date"> "yyyy-MM-dd"
 const dateForInput = computed(() => {
   const day = String(today.value.getDate()).padStart(2, '0')
   const month = String(today.value.getMonth() + 1).padStart(2, '0')
@@ -69,6 +82,10 @@ const dateForInput = computed(() => {
 async function fetchHomework() {
   const rawClass = cookies.get("class") || ""
   const className = rawClass.replace("А", "A").replace("Б", "B").replace("В", "V")
+  ifAdmin.value = await postRequest("/class/check_admin/", {
+    class_name: cookies.get("class"),
+    email: cookies.get("email")
+  })
 
   const response = await postRequest('/class/get_hw/', {
     date: displayDate.value,
@@ -81,15 +98,14 @@ async function fetchHomework() {
       if (parts.length === 2) {
         const subject = parts[0]
         let homework = parts[1]
-            .replace(/\[|\]|'/g, '')
+            .replace(/[\[\]']/g, '')
             .split(', ')
             .filter(Boolean)
             .join('\n')
         if (!homework) homework = 'Нет домашнего задания'
-
-        return { subject, homework, time: time[index] || '—' }
+        return {subject, homework, time: time[index] || '—'}
       }
-      return { subject: entry, homework: 'Нет домашнего задания', time: time[index] || '—' }
+      return {subject: entry, homework: 'Нет домашнего задания', time: time[index] || '—'}
     })
   }
 }
@@ -100,6 +116,7 @@ function onDateChange(event: Event) {
   today.value = new Date(input.value)
   fetchHomework()
 }
+
 
 onMounted(() => {
   fetchHomework()

@@ -9,12 +9,12 @@
 
     <Bottom v-if="['grades', 'allgrades', 'main'].includes(route.path.replace(/^\/|\/$/g, ''))"/>
   </div>
+
 </template>
 
 <script setup>
 import Header from "./components/Header.vue";
 import Bottom from "./components/Bottom.vue";
 import { useRoute } from 'vue-router'
-
 const route = useRoute()
 </script>

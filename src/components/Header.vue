@@ -11,7 +11,7 @@
     </div>
 
     <!-- Иконки -->
-    <ul class="flex items-center gap-2">
+    <ul v-if="['grades', 'allgrades', 'main'].includes(route.path.replace(/^\/|\/$/g, ''))" class="flex items-center gap-2">
       <li>
         <button @click="exit()" class="inline-flex items-center gap-2">
           <LogOut class="w-5 h-5" />
@@ -26,7 +26,8 @@
 <script setup lang="ts">
 import { LogOut, X } from "lucide-vue-next"
 import {useRouter} from 'vue-router'
-
+import { useRoute } from 'vue-router'
+const route = useRoute()
 const router = useRouter()
 async function exit() {
   const cookies = document.cookie.split(";");
