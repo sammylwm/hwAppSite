@@ -13,20 +13,35 @@
     <!-- Иконки -->
     <ul class="flex items-center gap-2">
       <li>
-        <a href="https://github.com/sammylwm" target="_blank"
-           class="flex items-center gap-2 text-gray-500 hover:text-blue-600">
-<!--          <img src="/github.svg" alt="GitHub" class="w-8"/>-->
-        </a>
-      </li>
-      <li>
-        <a href="https://t.me/sammylwm" target="_blank"
-           class="flex items-center gap-2 text-gray-500 hover:text-blue-600">
-<!--          <img src="/telegram.svg" alt="Telegram" class="w-8"/>-->
-        </a>
+        <button @click="exit()" class="inline-flex items-center gap-2">
+          <LogOut class="w-5 h-5" />
+          Выйти
+        </button>
       </li>
     </ul>
   </header>
 
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { LogOut, X } from "lucide-vue-next"
+import {useRouter} from 'vue-router'
+
+const router = useRouter()
+async function exit() {
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+
+    document.cookie = name.trim() +
+        "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    document.cookie = name.trim() +
+        "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+  }
+  await router.push("/login")
+
+}
+
+</script>
