@@ -24,19 +24,18 @@ const isCodeConfirmed = ref(false)
 
 async function userCode() {
   code.value = await postRequest("/register/", { email: email.value })
-  const className = class_name.value
-      .toString()
-      .replace(/А/g, "A")
-      .replace(/Б/g, "B")
-      .replace(/В/g, "V")
-  alert(className)
-  // const inputCode = window.prompt("Введите код из письма:")
-  // if (inputCode === code.value.toString()) {
-  //   isCodeConfirmed.value = true
-  //   await userCreate()
-  // } else {
-  //   alert("❌ Неверный код!")
-  // }
+  // const className = class_name.value
+  //     .toString()
+  //     .replace(/А/g, "A")
+  //     .replace(/Б/g, "B")
+  //     .replace(/В/g, "V")
+  const inputCode = window.prompt("Введите код из письма:")
+  if (inputCode === code.value.toString()) {
+    isCodeConfirmed.value = true
+    await userCreate()
+  } else {
+    alert("❌ Неверный код!")
+  }
 }
 async function userCreate() {
   try {
