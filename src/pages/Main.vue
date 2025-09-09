@@ -92,21 +92,20 @@ async function fetchHomework() {
     class_name: className
   })
 
-  if (Array.isArray(response)) {
-    lessons.value = response.map((entry: string, index: number) => {
-      const parts = entry.split('.', 2)
-      if (parts.length === 2) {
-        const subject = parts[0]
-        let homework = parts[1]
-            .replace(/[\[\]']/g, '')
-            .split(', ')
-            .filter(Boolean)
-            .join('\n')
-        if (!homework) homework = 'Нет домашнего задания'
-        return {subject, homework, time: time[index] || '—'}
-      }
-      return {subject: entry, homework: 'Нет домашнего задания', time: time[index] || '—'}
-    })
+  if (Array.isArray(response) && response.length === 3) {
+    const [subjectsList, homeworksList, timesList] = response;
+
+    lessons.value = subjectsList.map((subject: string, index: number) => {
+      const homework = (homeworksList[index] || "Нет домашнего задания")
+          .replace(/[\[\]']/g, '')    // на случай лишних скобок/кавычек
+          .split(', ')
+          .filter(Boolean)
+          .join('\n');
+
+      const time = timesList[index] || "—";
+
+      return { subject, homework, time };
+    });
   }
 }
 
