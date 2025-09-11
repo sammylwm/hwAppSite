@@ -13,7 +13,7 @@
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@tailwindcss/vite": "^4.1.12",
-    "@vueuse/integrations": "^13.7.0",
+    "@vueuse/integrations": "^13.9.0",
     "axios": "^1.11.0",
     "lucide-vue-next": "^0.542.0",
     "tailwindcss": "^4.1.12",

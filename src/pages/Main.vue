@@ -21,8 +21,6 @@
           class="border border-slate-300 rounded-lg px-3 py-2 text-center"
       />
     </div>
-
-    <!-- Карточки уроков -->
     <div
         v-for="(lesson, index) in lessons"
         :key="index"
@@ -49,7 +47,6 @@ import AddHwDialog from "../components/AddHwDialog.vue";
 const cookies = useCookies()
 const lessons = ref<any[]>([])
 const dialogOpen = ref(false)
-
 const ifAdmin = ref(false)
 const today = ref(new Date())
 
@@ -73,7 +70,6 @@ async function fetchHomework() {
       .replace(/A/g, "А")
       .replace(/B/g, "Б")
       .replace(/V/g, "В")
-  cookies.set('class', className, { expires: 7, path: '/' })
 
   ifAdmin.value = await postRequest("/class/check_admin/", {
     class_name: cookies.get("class"),
@@ -109,7 +105,13 @@ function onDateChange(event: Event) {
 }
 
 
-onMounted(() => {
-  fetchHomework()
+onMounted(async () => {
+  console.log('Компонент смонтирован, вызываем fetchHomework')
+  try {
+    await fetchHomework()
+    console.log('fetchHomework выполнена')
+  } catch (e) {
+    console.error('Ошибка fetchHomework:', e)
+  }
 })
 </script>
