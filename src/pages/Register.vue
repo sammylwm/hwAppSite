@@ -24,11 +24,6 @@ const isCodeConfirmed = ref(false)
 
 async function userCode() {
   code.value = await postRequest("/register/", { email: email.value })
-  // const className = class_name.value
-  //     .toString()
-  //     .replace(/А/g, "A")
-  //     .replace(/Б/g, "B")
-  //     .replace(/В/g, "V")
   const inputCode = window.prompt("Введите код из письма:")
   if (inputCode === code.value.toString()) {
     isCodeConfirmed.value = true
@@ -39,11 +34,7 @@ async function userCode() {
 }
 async function userCreate() {
   try {
-    const className = class_name.value
-        .toString()
-        .replace(/А/g, "A")
-        .replace(/Б/g, "B")
-        .replace(/В/g, "V")
+    const className = class_name.value.toString()
 
     result.value = await postRequest('/user/create/', {
       email: email.value, class_name: className,

@@ -45,26 +45,14 @@ import {useCookies} from "@vueuse/integrations/useCookies"
 import {postRequest} from '../api/api.vue'
 import AddHwDialog from "../components/AddHwDialog.vue";
 
-const time = [
-  "08:10 - 08:55",
-  "08:10 - 09:55",
-  "10:05 - 10:45",
-  "10:00 - 11:45",
-  "11:55 - 12:40",
-  "13:00 - 13:40",
-  "14:00 - 14:40",
-  "14:45 - 15:25"
-]
 
 const cookies = useCookies()
 const lessons = ref<any[]>([])
 const dialogOpen = ref(false)
 
 const ifAdmin = ref(false)
-// реактивная дата
 const today = ref(new Date())
 
-// формат для отображения "dd.MM.yyyy"
 const displayDate = computed(() => {
   const day = String(today.value.getDate()).padStart(2, '0')
   const month = String(today.value.getMonth() + 1).padStart(2, '0')
@@ -80,8 +68,13 @@ const dateForInput = computed(() => {
 })
 
 async function fetchHomework() {
-  const rawClass = cookies.get("class") || ""
-  const className = rawClass.replace("А", "A").replace("Б", "B").replace("В", "V")
+  let className = cookies.get("class") || ""
+  className = className
+      .replace(/A/g, "А")
+      .replace(/B/g, "Б")
+      .replace(/V/g, "В")
+  cookies.set('class', className, { expires: 7, path: '/' })
+
   ifAdmin.value = await postRequest("/class/check_admin/", {
     class_name: cookies.get("class"),
     email: cookies.get("email")
@@ -97,7 +90,7 @@ async function fetchHomework() {
 
     lessons.value = subjectsList.map((subject: string, index: number) => {
       const homework = (homeworksList[index] || "Нет домашнего задания")
-          .replace(/[\[\]']/g, '')    // на случай лишних скобок/кавычек
+          .replace(/[\[\]']/g, '')
           .split(', ')
           .filter(Boolean)
           .join('\n');
@@ -109,7 +102,6 @@ async function fetchHomework() {
   }
 }
 
-// при выборе новой даты
 function onDateChange(event: Event) {
   const input = event.target as HTMLInputElement
   today.value = new Date(input.value)

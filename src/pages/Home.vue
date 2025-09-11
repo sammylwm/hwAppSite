@@ -12,6 +12,8 @@ const cookies = useCookies()
 onMounted(async () => {
   const allCookies = cookies.getAll()
 
+
+
   if ("email" in allCookies && "password" in allCookies) {
     console.log("email:", cookies.get("email"))
     console.log("password:", cookies.get("password"))
