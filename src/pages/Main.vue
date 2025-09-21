@@ -63,7 +63,6 @@ const dateForInput = computed(() => {
   const year = today.value.getFullYear()
   return `${year}-${month}-${day}`
 })
-
 async function fetchHomework() {
   let className = cookies.get("class") || ""
   className = className
@@ -71,32 +70,46 @@ async function fetchHomework() {
       .replace(/B/g, "Б")
       .replace(/V/g, "В")
 
+  // проверка админа
   ifAdmin.value = await postRequest("/class/check_admin/", {
     class_name: cookies.get("class"),
     email: cookies.get("email")
   })
 
+  // запрос домашки
   const response = await postRequest('/class/get_hw/', {
     date: displayDate.value,
     class_name: className
   })
 
   if (Array.isArray(response) && response.length === 3) {
-    const [subjectsList, homeworksList, timesList] = response;
+    const [subjectsList, homeworksList, timesList] = response
+    console.log("homeworksList:", homeworksList)
 
     lessons.value = subjectsList.map((subject: string, index: number) => {
-      const homework = (homeworksList[index] || "Нет домашнего задания")
+      let rawHomework = homeworksList[index]
+
+      // если пришёл массив → склеиваем в строку
+      if (Array.isArray(rawHomework)) {
+        rawHomework = rawHomework.join(', ')
+      }
+
+      // приводим к строке и чистим
+      const homework = String(rawHomework || "Нет домашнего задания")
           .replace(/[\[\]']/g, '')
           .split(', ')
           .filter(Boolean)
-          .join('\n');
+          .join('\n')
 
-      const time = timesList[index] || "—";
+      const time = timesList[index] || "—"
 
-      return { subject, homework, time };
-    });
+      console.log(`Урок ${index}:`, { subject, homework, time })
+
+      return { subject, homework, time }
+    })
   }
 }
+
 
 function onDateChange(event: Event) {
   const input = event.target as HTMLInputElement
